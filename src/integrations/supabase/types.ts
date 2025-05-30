@@ -60,105 +60,50 @@ export type Database = {
         }
         Relationships: []
       }
-      contas_gerais: {
+      despesas: {
         Row: {
           created_at: string
           data_pagamento: string | null
+          data_vencimento: string
           descricao: string
+          forma_pagamento: string | null
           id: string
           numero: string
-          status: Database["public"]["Enums"]["status_conta"]
-          tipo: Database["public"]["Enums"]["tipo_conta_geral"]
+          observacoes: string | null
+          status: string
+          tipo: string
           updated_at: string
           valor: number
-          vencimento: string
         }
         Insert: {
           created_at?: string
           data_pagamento?: string | null
+          data_vencimento: string
           descricao: string
+          forma_pagamento?: string | null
           id?: string
-          numero: string
-          status?: Database["public"]["Enums"]["status_conta"]
-          tipo: Database["public"]["Enums"]["tipo_conta_geral"]
+          numero?: string
+          observacoes?: string | null
+          status?: string
+          tipo?: string
           updated_at?: string
           valor: number
-          vencimento: string
         }
         Update: {
           created_at?: string
           data_pagamento?: string | null
+          data_vencimento?: string
           descricao?: string
+          forma_pagamento?: string | null
           id?: string
           numero?: string
-          status?: Database["public"]["Enums"]["status_conta"]
-          tipo?: Database["public"]["Enums"]["tipo_conta_geral"]
+          observacoes?: string | null
+          status?: string
+          tipo?: string
           updated_at?: string
           valor?: number
-          vencimento?: string
         }
         Relationships: []
-      }
-      contas_receber: {
-        Row: {
-          cliente_id: string
-          created_at: string
-          data_recebimento: string | null
-          forma_pagamento: Database["public"]["Enums"]["forma_pagamento"] | null
-          id: string
-          numero: string
-          orcamento_id: string | null
-          status: Database["public"]["Enums"]["status_conta"]
-          updated_at: string
-          valor: number
-          vencimento: string
-        }
-        Insert: {
-          cliente_id: string
-          created_at?: string
-          data_recebimento?: string | null
-          forma_pagamento?:
-            | Database["public"]["Enums"]["forma_pagamento"]
-            | null
-          id?: string
-          numero: string
-          orcamento_id?: string | null
-          status?: Database["public"]["Enums"]["status_conta"]
-          updated_at?: string
-          valor: number
-          vencimento: string
-        }
-        Update: {
-          cliente_id?: string
-          created_at?: string
-          data_recebimento?: string | null
-          forma_pagamento?:
-            | Database["public"]["Enums"]["forma_pagamento"]
-            | null
-          id?: string
-          numero?: string
-          orcamento_id?: string | null
-          status?: Database["public"]["Enums"]["status_conta"]
-          updated_at?: string
-          valor?: number
-          vencimento?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contas_receber_cliente_id_fkey"
-            columns: ["cliente_id"]
-            isOneToOne: false
-            referencedRelation: "clientes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contas_receber_orcamento_id_fkey"
-            columns: ["orcamento_id"]
-            isOneToOne: false
-            referencedRelation: "orcamentos"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       fornecedores: {
         Row: {
@@ -491,6 +436,59 @@ export type Database = {
         }
         Relationships: []
       }
+      receitas: {
+        Row: {
+          created_at: string
+          data_recebimento: string | null
+          data_vencimento: string
+          descricao: string
+          forma_pagamento: string | null
+          id: string
+          numero: string
+          observacoes: string | null
+          ordem_servico_id: string | null
+          status: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          data_recebimento?: string | null
+          data_vencimento: string
+          descricao: string
+          forma_pagamento?: string | null
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          ordem_servico_id?: string | null
+          status?: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          created_at?: string
+          data_recebimento?: string | null
+          data_vencimento?: string
+          descricao?: string
+          forma_pagamento?: string | null
+          id?: string
+          numero?: string
+          observacoes?: string | null
+          ordem_servico_id?: string | null
+          status?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receitas_ordem_servico_id_fkey"
+            columns: ["ordem_servico_id"]
+            isOneToOne: false
+            referencedRelation: "ordem_servico"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       servicos: {
         Row: {
           created_at: string
@@ -572,11 +570,19 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      generate_despesa_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_orcamento_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
       generate_os_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_receita_number: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
