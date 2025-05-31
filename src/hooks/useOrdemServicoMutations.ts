@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { TablesInsert, TablesUpdate } from "@/integrations/supabase/types"
@@ -20,9 +19,14 @@ export const useUpdateOrdemServico = () => {
         .select(`
           *,
           orcamento:orcamentos(
+            *,
             orcamento_pecas(
-              quantidade,
-              peca_id
+              *,
+              peca:pecas(*)
+            ),
+            orcamento_servicos(
+              *,
+              servico:servicos(*)
             )
           )
         `)
