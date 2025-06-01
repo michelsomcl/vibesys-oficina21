@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FinanceiroCreateDialog } from "@/components/FinanceiroCreateDialog"
 import { FinanceiroListItem } from "@/components/FinanceiroListItem"
 import { Tables } from "@/integrations/supabase/types"
+import { useOrdensServico } from "@/hooks/useOrdensServico"
 
 type Receita = Tables<"receitas">
 
@@ -11,6 +12,8 @@ interface ReceitasListProps {
 }
 
 export const ReceitasList = ({ receitas }: ReceitasListProps) => {
+  const { data: ordensServico = [] } = useOrdensServico()
+
   return (
     <Card>
       <CardHeader>
@@ -26,13 +29,21 @@ export const ReceitasList = ({ receitas }: ReceitasListProps) => {
               Nenhuma receita encontrada. Crie uma nova receita ou finalize uma ordem de serviço.
             </div>
           ) : (
-            receitas.map((receita) => (
-              <FinanceiroListItem
-                key={receita.id}
-                item={receita}
-                tipo="receita"
-              />
-            ))
+            receitas.map((receita) => {
+              // Buscar dados da OS se a receita estiver vinculada
+              const ordemServico = receita.ordem_servico_id 
+                ? ordensServico.find(os => os.id === receita.ordem_servico_id)
+                : undefined
+
+              return (
+                <FinanceiroListItem
+                  key={receita.id}
+                  item={receita}
+                  tipo="receita"
+                  ordemServico={ordemServico}
+                />
+              )
+            })
           )}
         </div>
       </CardContent>

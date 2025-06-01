@@ -14,9 +14,10 @@ type Despesa = Tables<"despesas">
 interface FinanceiroListItemProps {
   item: Receita | Despesa
   tipo: "receita" | "despesa"
+  ordemServico?: any // Dados da OS se for receita vinculada
 }
 
-export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
+export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListItemProps) => {
   const updateReceita = useUpdateReceita()
   const deleteReceita = useDeleteReceita()
   const updateDespesa = useUpdateDespesa()
@@ -90,6 +91,11 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
   const isReceitaOS = tipo === "receita" && (item as Receita).ordem_servico_id
   const osNumero = isReceitaOS ? item.descricao.split(' ').pop() : undefined
 
+  // Calcular valores para receitas vinculadas a OS
+  const valorPago = ordemServico?.valor_pago || 0
+  const valorTotal = ordemServico ? (ordemServico.valor_total - (ordemServico.desconto || 0)) : item.valor
+  const valorAPagar = valorTotal - valorPago
+
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
       <div className="flex-1 space-y-1">
@@ -101,7 +107,13 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
               {item.status}
             </div>
           </Badge>
-          {isReceitaOS && <ReceitaOSBadge osNumero={osNumero} />}
+          {isReceitaOS && (
+            <ReceitaOSBadge 
+              osNumero={osNumero} 
+              valorPago={valorPago}
+              valorTotal={valorTotal}
+            />
+          )}
         </div>
         
         <div className="font-medium">{item.descricao}</div>
@@ -123,6 +135,20 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
           )}
         </div>
 
+        {/* Mostrar informações de pagamento parcial para receitas de OS */}
+        {isReceitaOS && valorPago > 0 && (
+          <div className="text-sm space-y-1">
+            <div className="text-green-600">
+              Valor Recebido: R$ {valorPago.toFixed(2).replace(".", ",")}
+            </div>
+            {valorAPagar > 0 && (
+              <div className="text-orange-600">
+                Valor a Receber: R$ {valorAPagar.toFixed(2).replace(".", ",")}
+              </div>
+            )}
+          </div>
+        )}
+
         {item.observacoes && (
           <div className="text-sm text-muted-foreground italic">
             {item.observacoes}
@@ -131,8 +157,16 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className={`text-lg font-bold ${tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
-          {tipo === "receita" ? "+" : "-"}R$ {item.valor.toFixed(2).replace(".", ",")}
+        <div className="text-right">
+          <div className={`text-lg font-bold ${tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
+            {tipo === "receita" ? "+" : "-"}R$ {item.valor.toFixed(2).replace(".", ",")}
+          </div>
+          {/* Mostrar valor total da OS se for diferente do valor da receita */}
+          {isReceitaOS && valorTotal !== item.valor && (
+            <div className="text-sm text-muted-foreground">
+              Total OS: R$ {valorTotal.toFixed(2).replace(".", ",")}
+            </div>
+          )}
         </div>
         
         <div className="flex gap-1">

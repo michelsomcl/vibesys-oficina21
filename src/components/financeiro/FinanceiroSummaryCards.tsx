@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock, CheckCircle, TrendingDown } from "lucide-react"
 import { Tables } from "@/integrations/supabase/types"
+import { useOrdensServico } from "@/hooks/useOrdensServico"
 
 type Receita = Tables<"receitas">
 type Despesa = Tables<"despesas">
@@ -12,13 +13,53 @@ interface FinanceiroSummaryCardsProps {
 }
 
 export const FinanceiroSummaryCards = ({ receitas, despesas }: FinanceiroSummaryCardsProps) => {
-  const receitasRecebidas = receitas.filter(r => r.status === "Recebido")
-  const receitasPendentes = receitas.filter(r => r.status === "Pendente")
+  const { data: ordensServico = [] } = useOrdensServico()
+
+  // Calcular valores das receitas considerando pagamentos parciais das OS
+  let totalReceitasRecebidas = 0
+  let totalReceitasPendentes = 0
+  let countReceitasRecebidas = 0
+  let countReceitasPendentes = 0
+
+  receitas.forEach(receita => {
+    if (receita.ordem_servico_id) {
+      // Receita vinculada a OS - calcular baseado nos pagamentos da OS
+      const os = ordensServico.find(o => o.id === receita.ordem_servico_id)
+      if (os) {
+        const valorTotal = os.valor_total - (os.desconto || 0)
+        const valorPago = os.valor_pago || 0
+        const valorAPagar = valorTotal - valorPago
+
+        if (valorPago > 0) {
+          totalReceitasRecebidas += valorPago
+          if (valorAPagar <= 0) {
+            countReceitasRecebidas++
+          }
+        }
+        
+        if (valorAPagar > 0) {
+          totalReceitasPendentes += valorAPagar
+          countReceitasPendentes++
+        } else if (valorPago === 0) {
+          totalReceitasPendentes += valorTotal
+          countReceitasPendentes++
+        }
+      }
+    } else {
+      // Receita normal
+      if (receita.status === "Recebido") {
+        totalReceitasRecebidas += Number(receita.valor)
+        countReceitasRecebidas++
+      } else {
+        totalReceitasPendentes += Number(receita.valor)
+        countReceitasPendentes++
+      }
+    }
+  })
+
   const despesasPagas = despesas.filter(d => d.status === "Pago")
   const despesasPendentes = despesas.filter(d => d.status === "Pendente")
 
-  const totalReceitasRecebidas = receitasRecebidas.reduce((sum, r) => sum + Number(r.valor), 0)
-  const totalReceitasPendentes = receitasPendentes.reduce((sum, r) => sum + Number(r.valor), 0)
   const totalDespesasPagas = despesasPagas.reduce((sum, d) => sum + Number(d.valor), 0)
   const totalDespesasPendentes = despesasPendentes.reduce((sum, d) => sum + Number(d.valor), 0)
 
@@ -34,7 +75,7 @@ export const FinanceiroSummaryCards = ({ receitas, despesas }: FinanceiroSummary
             R$ {totalReceitasPendentes.toFixed(2).replace('.', ',')}
           </div>
           <p className="text-xs text-muted-foreground">
-            {receitasPendentes.length} receitas pendentes
+            {countReceitasPendentes} receitas pendentes
           </p>
         </CardContent>
       </Card>
@@ -49,7 +90,7 @@ export const FinanceiroSummaryCards = ({ receitas, despesas }: FinanceiroSummary
             R$ {totalReceitasRecebidas.toFixed(2).replace('.', ',')}
           </div>
           <p className="text-xs text-muted-foreground">
-            {receitasRecebidas.length} receitas recebidas
+            {countReceitasRecebidas} receitas recebidas
           </p>
         </CardContent>
       </Card>
