@@ -93,18 +93,28 @@ export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListI
 
   // Calcular valores para receitas vinculadas a OS
   const valorPago = ordemServico?.valor_pago || 0
-  const valorTotal = ordemServico ? (ordemServico.valor_total - (ordemServico.desconto || 0)) : item.valor
+  const valorTotal = ordemServico ? (ordemServico.valor_total - (ordemServico.desconto || 0)) : Number(item.valor)
   const valorAPagar = valorTotal - valorPago
+
+  // Para receitas de OS, determinar o status real baseado no pagamento
+  let statusReal = item.status
+  if (isReceitaOS && ordemServico) {
+    if (valorAPagar <= 0) {
+      statusReal = "Recebido"
+    } else {
+      statusReal = "Pendente"
+    }
+  }
 
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-3">
           <span className="font-medium text-sm text-muted-foreground">{item.numero}</span>
-          <Badge className={getStatusColor(item.status)}>
+          <Badge className={getStatusColor(statusReal)}>
             <div className="flex items-center gap-1">
-              {getStatusIcon(item.status)}
-              {item.status}
+              {getStatusIcon(statusReal)}
+              {statusReal}
             </div>
           </Badge>
           {isReceitaOS && (
@@ -120,7 +130,7 @@ export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListI
         
         <div className="text-sm text-muted-foreground">
           Vencimento: {format(new Date(item.data_vencimento), "dd/MM/yyyy")}
-          {item.status !== "Pendente" && (
+          {statusReal !== "Pendente" && (
             <span className="ml-4">
               {tipo === "receita" ? "Recebido" : "Pago"} em:{" "}
               {format(
@@ -159,10 +169,10 @@ export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListI
       <div className="flex items-center gap-4">
         <div className="text-right">
           <div className={`text-lg font-bold ${tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
-            {tipo === "receita" ? "+" : "-"}R$ {item.valor.toFixed(2).replace(".", ",")}
+            {tipo === "receita" ? "+" : "-"}R$ {Number(item.valor).toFixed(2).replace(".", ",")}
           </div>
           {/* Mostrar valor total da OS se for diferente do valor da receita */}
-          {isReceitaOS && valorTotal !== item.valor && (
+          {isReceitaOS && valorTotal !== Number(item.valor) && (
             <div className="text-sm text-muted-foreground">
               Total OS: R$ {valorTotal.toFixed(2).replace(".", ",")}
             </div>
@@ -178,7 +188,7 @@ export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListI
             disabled={updateReceita.isPending || updateDespesa.isPending || isReceitaOS}
             title={isReceitaOS ? "Status controlado pela Ordem de Serviço" : "Alterar status"}
           >
-            {item.status === "Pendente" ? (
+            {statusReal === "Pendente" ? (
               <CheckCircle className="h-4 w-4 text-green-600" />
             ) : (
               <Clock className="h-4 w-4 text-yellow-600" />
