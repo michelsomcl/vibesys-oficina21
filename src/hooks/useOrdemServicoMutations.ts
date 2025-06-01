@@ -1,3 +1,4 @@
+
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { supabase } from "@/integrations/supabase/client"
 import { TablesInsert, TablesUpdate } from "@/integrations/supabase/types"
@@ -54,6 +55,8 @@ export const useUpdateOrdemServico = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ordens_servico"] })
+      // Invalidar receitas pois o trigger do banco pode ter atualizado alguma receita
+      queryClient.invalidateQueries({ queryKey: ["receitas"] })
       toast.success("Ordem de serviço atualizada com sucesso!")
     },
     onError: (error) => {
@@ -79,6 +82,8 @@ export const useCreateOrdemServico = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ordens_servico"] })
+      // Invalidar receitas pois o trigger do banco criou uma nova receita
+      queryClient.invalidateQueries({ queryKey: ["receitas"] })
       toast.success("Ordem de serviço criada com sucesso!")
     },
     onError: (error) => {
@@ -101,6 +106,14 @@ export const useDeleteOrdemServico = () => {
         .single()
 
       if (osError) throw osError
+
+      // Excluir as receitas vinculadas a esta OS primeiro
+      const { error: receitaError } = await supabase
+        .from("receitas")
+        .delete()
+        .eq("ordem_servico_id", id)
+
+      if (receitaError) throw receitaError
 
       // Excluir a ordem de serviço
       const { error: deleteError } = await supabase
@@ -125,6 +138,8 @@ export const useDeleteOrdemServico = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["ordens_servico"] })
       queryClient.invalidateQueries({ queryKey: ["orcamentos"] })
+      // Invalidar receitas pois excluímos receitas vinculadas
+      queryClient.invalidateQueries({ queryKey: ["receitas"] })
       toast.success("Ordem de serviço excluída com sucesso!")
     },
     onError: (error) => {

@@ -6,6 +6,7 @@ import { CheckCircle, Clock, Edit, Trash2 } from "lucide-react"
 import { Tables } from "@/integrations/supabase/types"
 import { useUpdateReceita, useDeleteReceita } from "@/hooks/useReceitas"
 import { useUpdateDespesa, useDeleteDespesa } from "@/hooks/useDespesas"
+import { ReceitaOSBadge } from "@/components/financeiro/ReceitaOSBadge"
 
 type Receita = Tables<"receitas">
 type Despesa = Tables<"despesas">
@@ -46,6 +47,12 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
   }
 
   const handleDelete = async () => {
+    // Verificar se é uma receita vinculada a uma OS
+    if (tipo === "receita" && (item as Receita).ordem_servico_id) {
+      alert("Esta receita está vinculada a uma Ordem de Serviço e não pode ser excluída diretamente. Exclua a OS correspondente se necessário.")
+      return
+    }
+
     if (window.confirm("Tem certeza que deseja excluir este lançamento?")) {
       try {
         if (tipo === "receita") {
@@ -79,6 +86,10 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
     )
   }
 
+  // Verificar se é uma receita vinculada a OS
+  const isReceitaOS = tipo === "receita" && (item as Receita).ordem_servico_id
+  const osNumero = isReceitaOS ? item.descricao.split(' ').pop() : undefined
+
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
       <div className="flex-1 space-y-1">
@@ -90,6 +101,7 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
               {item.status}
             </div>
           </Badge>
+          {isReceitaOS && <ReceitaOSBadge osNumero={osNumero} />}
         </div>
         
         <div className="font-medium">{item.descricao}</div>
@@ -129,7 +141,8 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
             size="sm"
             onClick={handleStatusToggle}
             className="h-8 w-8 p-0"
-            disabled={updateReceita.isPending || updateDespesa.isPending}
+            disabled={updateReceita.isPending || updateDespesa.isPending || isReceitaOS}
+            title={isReceitaOS ? "Status controlado pela Ordem de Serviço" : "Alterar status"}
           >
             {item.status === "Pendente" ? (
               <CheckCircle className="h-4 w-4 text-green-600" />
@@ -143,7 +156,8 @@ export const FinanceiroListItem = ({ item, tipo }: FinanceiroListItemProps) => {
             size="sm"
             onClick={handleDelete}
             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            disabled={deleteReceita.isPending || deleteDespesa.isPending}
+            disabled={deleteReceita.isPending || deleteDespesa.isPending || isReceitaOS}
+            title={isReceitaOS ? "Receita vinculada à OS - não pode ser excluída" : "Excluir"}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
