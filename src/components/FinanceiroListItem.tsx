@@ -16,7 +16,7 @@ interface FinanceiroListItemProps {
 
 export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListItemProps) => {
   // Verificar se é uma receita vinculada a OS
-  const isReceitaOS = tipo === "receita" && (item as Receita).ordem_servico_id
+  const isReceitaOS = tipo === "receita" && !!(item as Receita).ordem_servico_id
   const osNumero = isReceitaOS ? item.descricao.split(' ').pop() : undefined
 
   // Calcular valores para receitas vinculadas a OS

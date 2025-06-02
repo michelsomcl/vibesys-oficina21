@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils"
 import { useCreateReceita } from "@/hooks/useReceitas"
 import { useCreateDespesa } from "@/hooks/useDespesas"
 import { useCategorias } from "@/hooks/useCategorias"
+import { toast } from "sonner"
 
 interface FinanceiroCreateDialogProps {
   tipo: "receita" | "despesa"
@@ -41,6 +42,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
     e.preventDefault()
     
     if (!descricao || !valor || !dataVencimento || !categoriaId) {
+      toast.error("Por favor, preencha todos os campos obrigatórios")
       return
     }
 
@@ -74,6 +76,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
       setOpen(false)
     } catch (error) {
       console.error("Erro ao criar lançamento:", error)
+      toast.error("Erro ao criar lançamento")
     }
   }
 
@@ -94,7 +97,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="descricao">Descrição</Label>
+            <Label htmlFor="descricao">Descrição *</Label>
             <Input
               id="descricao"
               value={descricao}
@@ -105,7 +108,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
           </div>
 
           <div>
-            <Label htmlFor="valor">Valor</Label>
+            <Label htmlFor="valor">Valor *</Label>
             <Input
               id="valor"
               type="number"
@@ -118,7 +121,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
           </div>
 
           <div>
-            <Label>Data de Vencimento</Label>
+            <Label>Data de Vencimento *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -144,7 +147,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
           </div>
 
           <div>
-            <Label htmlFor="categoria">Categoria</Label>
+            <Label htmlFor="categoria">Categoria *</Label>
             <Select value={categoriaId} onValueChange={setCategoriaId} required>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma categoria" />

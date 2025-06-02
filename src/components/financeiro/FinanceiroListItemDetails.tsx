@@ -22,9 +22,22 @@ export const FinanceiroListItemDetails = ({
   valorPago,
   valorAPagar
 }: FinanceiroListItemDetailsProps) => {
+  const categoria = (item as any).categoria
+
   return (
     <div className="space-y-1">
       <div className="font-medium">{item.descricao}</div>
+      
+      {/* Mostrar categoria se existir */}
+      {categoria && (
+        <div className="flex items-center gap-2">
+          <div
+            className="w-3 h-3 rounded-full"
+            style={{ backgroundColor: categoria.cor || "#6B7280" }}
+          />
+          <span className="text-sm text-muted-foreground">{categoria.nome}</span>
+        </div>
+      )}
       
       <div className="text-sm text-muted-foreground">
         Vencimento: {format(new Date(item.data_vencimento), "dd/MM/yyyy")}
