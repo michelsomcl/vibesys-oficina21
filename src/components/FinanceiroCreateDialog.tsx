@@ -13,6 +13,7 @@ import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { useCreateReceita } from "@/hooks/useReceitas"
 import { useCreateDespesa } from "@/hooks/useDespesas"
+import { useCategorias } from "@/hooks/useCategorias"
 
 interface FinanceiroCreateDialogProps {
   tipo: "receita" | "despesa"
@@ -25,14 +26,21 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
   const [dataVencimento, setDataVencimento] = useState<Date>()
   const [observacoes, setObservacoes] = useState("")
   const [tipoDespesa, setTipoDespesa] = useState("Variável")
+  const [categoriaId, setCategoriaId] = useState("")
 
   const createReceita = useCreateReceita()
   const createDespesa = useCreateDespesa()
+  const { data: categorias = [] } = useCategorias()
+
+  // Filtrar categorias baseado no tipo
+  const categoriasFiltradas = categorias.filter(categoria => 
+    categoria.tipo === tipo || categoria.tipo === "ambos"
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!descricao || !valor || !dataVencimento) {
+    if (!descricao || !valor || !dataVencimento || !categoriaId) {
       return
     }
 
@@ -43,6 +51,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
           valor: parseFloat(valor),
           data_vencimento: format(dataVencimento, "yyyy-MM-dd"),
           observacoes: observacoes || null,
+          categoria_id: categoriaId,
         })
       } else {
         await createDespesa.mutateAsync({
@@ -51,6 +60,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
           data_vencimento: format(dataVencimento, "yyyy-MM-dd"),
           observacoes: observacoes || null,
           tipo: tipoDespesa as "Fixa" | "Variável",
+          categoria_id: categoriaId,
         })
       }
 
@@ -60,6 +70,7 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
       setDataVencimento(undefined)
       setObservacoes("")
       setTipoDespesa("Variável")
+      setCategoriaId("")
       setOpen(false)
     } catch (error) {
       console.error("Erro ao criar lançamento:", error)
@@ -130,6 +141,28 @@ export const FinanceiroCreateDialog = ({ tipo }: FinanceiroCreateDialogProps) =>
                 />
               </PopoverContent>
             </Popover>
+          </div>
+
+          <div>
+            <Label htmlFor="categoria">Categoria</Label>
+            <Select value={categoriaId} onValueChange={setCategoriaId} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                {categoriasFiltradas.map((categoria) => (
+                  <SelectItem key={categoria.id} value={categoria.id}>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: categoria.cor || "#6B7280" }}
+                      />
+                      {categoria.nome}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {tipo === "despesa" && (
