@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Clock, CheckCircle, TrendingDown } from "lucide-react"
+import { Clock, CheckCircle, TrendingDown, TrendingUp, DollarSign } from "lucide-react"
 import { Tables } from "@/integrations/supabase/types"
 import { useOrdensServico } from "@/hooks/useOrdensServico"
 
@@ -63,8 +63,12 @@ export const FinanceiroSummaryCards = ({ receitas, despesas }: FinanceiroSummary
   const totalDespesasPagas = despesasPagas.reduce((sum, d) => sum + Number(d.valor), 0)
   const totalDespesasPendentes = despesasPendentes.reduce((sum, d) => sum + Number(d.valor), 0)
 
+  // Calcular saldo (receitas recebidas - despesas pagas)
+  const saldo = totalReceitasRecebidas - totalDespesasPagas
+  const saldoPositivo = saldo >= 0
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">A Receber</CardTitle>
@@ -121,6 +125,26 @@ export const FinanceiroSummaryCards = ({ receitas, despesas }: FinanceiroSummary
           </div>
           <p className="text-xs text-muted-foreground">
             {despesasPagas.length} despesas pagas
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Novo card de saldo */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+          {saldoPositivo ? (
+            <TrendingUp className="h-4 w-4 text-green-600" />
+          ) : (
+            <DollarSign className="h-4 w-4 text-red-600" />
+          )}
+        </CardHeader>
+        <CardContent>
+          <div className={`text-2xl font-bold ${saldoPositivo ? "text-green-600" : "text-red-600"}`}>
+            R$ {Math.abs(saldo).toFixed(2).replace('.', ',')}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {saldoPositivo ? "Lucro" : "Prejuízo"} atual
           </p>
         </CardContent>
       </Card>

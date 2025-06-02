@@ -185,7 +185,11 @@ export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListI
             size="sm"
             onClick={handleStatusToggle}
             className="h-8 w-8 p-0"
-            disabled={updateReceita.isPending || updateDespesa.isPending || isReceitaOS}
+            disabled={
+              updateReceita.isPending || 
+              updateDespesa.isPending || 
+              (isReceitaOS ? true : false)
+            }
             title={isReceitaOS ? "Status controlado pela Ordem de Serviço" : "Alterar status"}
           >
             {statusReal === "Pendente" ? (
@@ -200,7 +204,11 @@ export const FinanceiroListItem = ({ item, tipo, ordemServico }: FinanceiroListI
             size="sm"
             onClick={handleDelete}
             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-            disabled={deleteReceita.isPending || deleteDespesa.isPending || isReceitaOS}
+            disabled={
+              deleteReceita.isPending || 
+              deleteDespesa.isPending || 
+              (isReceitaOS ? true : false)
+            }
             title={isReceitaOS ? "Receita vinculada à OS - não pode ser excluída" : "Excluir"}
           >
             <Trash2 className="h-4 w-4" />

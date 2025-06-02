@@ -14,7 +14,10 @@ export const useReceitas = () => {
     queryFn: async (): Promise<Receita[]> => {
       const { data, error } = await supabase
         .from("receitas")
-        .select("*")
+        .select(`
+          *,
+          categoria:categorias(*)
+        `)
         .order("created_at", { ascending: false })
 
       if (error) throw error

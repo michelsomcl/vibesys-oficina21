@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      categorias: {
+        Row: {
+          cor: string | null
+          created_at: string
+          id: string
+          nome: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          cor?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          cor?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           aniversario: string | null
@@ -62,6 +89,7 @@ export type Database = {
       }
       despesas: {
         Row: {
+          categoria_id: string | null
           created_at: string
           data_pagamento: string | null
           data_vencimento: string
@@ -76,6 +104,7 @@ export type Database = {
           valor: number
         }
         Insert: {
+          categoria_id?: string | null
           created_at?: string
           data_pagamento?: string | null
           data_vencimento: string
@@ -90,6 +119,7 @@ export type Database = {
           valor: number
         }
         Update: {
+          categoria_id?: string | null
           created_at?: string
           data_pagamento?: string | null
           data_vencimento?: string
@@ -103,7 +133,15 @@ export type Database = {
           updated_at?: string
           valor?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "despesas_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fornecedores: {
         Row: {
@@ -438,6 +476,7 @@ export type Database = {
       }
       receitas: {
         Row: {
+          categoria_id: string | null
           created_at: string
           data_recebimento: string | null
           data_vencimento: string
@@ -452,6 +491,7 @@ export type Database = {
           valor: number
         }
         Insert: {
+          categoria_id?: string | null
           created_at?: string
           data_recebimento?: string | null
           data_vencimento: string
@@ -466,6 +506,7 @@ export type Database = {
           valor: number
         }
         Update: {
+          categoria_id?: string | null
           created_at?: string
           data_recebimento?: string | null
           data_vencimento?: string
@@ -480,6 +521,13 @@ export type Database = {
           valor?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "receitas_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "receitas_ordem_servico_id_fkey"
             columns: ["ordem_servico_id"]

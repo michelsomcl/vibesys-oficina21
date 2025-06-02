@@ -14,7 +14,10 @@ export const useDespesas = () => {
     queryFn: async (): Promise<Despesa[]> => {
       const { data, error } = await supabase
         .from("despesas")
-        .select("*")
+        .select(`
+          *,
+          categoria:categorias(*)
+        `)
         .order("created_at", { ascending: false })
 
       if (error) throw error
