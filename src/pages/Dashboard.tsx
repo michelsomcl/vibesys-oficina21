@@ -6,41 +6,82 @@ import {
   FileText, 
   DollarSign, 
   Calendar,
-  TrendingUp,
   Clock,
-  CheckCircle,
-  AlertTriangle
+  TrendingUp
 } from "lucide-react"
+import { useDashboardStats } from "@/hooks/useDashboardStats"
+import { useMarketing } from "@/hooks/useMarketing"
 
 const Dashboard = () => {
-  // Dados mock para demonstração
-  const stats = [
-    { title: "Clientes Ativos", value: "247", icon: Users, color: "bg-primary" },
-    { title: "Orçamentos Pendentes", value: "12", icon: FileText, color: "bg-secondary" },
-    { title: "Faturamento Mensal", value: "R$ 45.230", icon: DollarSign, color: "bg-accent" },
-    { title: "Serviços em Andamento", value: "8", icon: Clock, color: "bg-muted" },
-  ]
+  const { data: stats } = useDashboardStats()
+  const { data: marketing = [] } = useMarketing()
 
-  const recentOrders = [
-    { id: "OS-001", cliente: "João Silva", veiculo: "Civic 2020", status: "Em andamento", valor: "R$ 1.200" },
-    { id: "OS-002", cliente: "Maria Santos", veiculo: "Corolla 2019", status: "Aguardando peça", valor: "R$ 850" },
-    { id: "OS-003", cliente: "Carlos Lima", veiculo: "Focus 2018", status: "Concluído", valor: "R$ 650" },
-  ]
+  // Função para verificar se o aniversário é hoje ou nos próximos dias
+  const isUpcomingBirthday = (dateStr: string | null) => {
+    if (!dateStr) return false
+    
+    try {
+      const [day, month] = dateStr.split("/")
+      if (!day || !month) return false
+      
+      const currentYear = new Date().getFullYear()
+      const birthDate = new Date(currentYear, parseInt(month) - 1, parseInt(day))
+      const today = new Date()
+      const sevenDaysFromNow = new Date()
+      sevenDaysFromNow.setDate(today.getDate() + 7)
+      
+      // Se já passou este ano, verificar no próximo ano
+      if (birthDate < today) {
+        birthDate.setFullYear(currentYear + 1)
+      }
+      
+      return birthDate >= today && birthDate <= sevenDaysFromNow
+    } catch {
+      return false
+    }
+  }
 
-  const aniversariantes = [
-    { nome: "Ana Costa", data: "15/12", telefone: "(11) 98765-4321" },
-    { nome: "Pedro Oliveira", data: "18/12", telefone: "(11) 91234-5678" },
-    { nome: "Lucia Ferreira", data: "22/12", telefone: "(11) 95555-0000" },
+  const aniversariantes = marketing
+    .filter(contact => isUpcomingBirthday(contact.data_aniversario))
+    .slice(0, 3)
+
+  const dashboardStats = [
+    { 
+      title: "Clientes Ativos", 
+      value: stats.clientesAtivos.toString(), 
+      icon: Users, 
+      color: "bg-primary" 
+    },
+    { 
+      title: "Orçamentos Pendentes", 
+      value: stats.orcamentosPendentes.toString(), 
+      icon: FileText, 
+      color: "bg-secondary" 
+    },
+    { 
+      title: "Faturamento Mensal", 
+      value: `R$ ${stats.faturamentoMensal.toFixed(2).replace(".", ",")}`, 
+      icon: DollarSign, 
+      color: "bg-accent" 
+    },
+    { 
+      title: "Serviços em Andamento", 
+      value: stats.servicosAndamento.toString(), 
+      icon: Clock, 
+      color: "bg-muted" 
+    },
   ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Concluído":
+      case "Entregue":
         return "bg-green-100 text-green-800"
-      case "Em andamento":
+      case "Finalizado":
         return "bg-blue-100 text-blue-800"
-      case "Aguardando peça":
+      case "Andamento":
         return "bg-yellow-100 text-yellow-800"
+      case "Aguardando Peças":
+        return "bg-orange-100 text-orange-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
@@ -55,7 +96,7 @@ const Dashboard = () => {
 
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => (
+        {dashboardStats.map((stat, index) => (
           <Card key={index} className="hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -83,7 +124,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentOrders.map((order) => (
+              {stats.recentOrders.map((order) => (
                 <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="space-y-1">
                     <div className="font-medium text-foreground">{order.id}</div>
@@ -98,33 +139,43 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
+              {stats.recentOrders.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  Nenhuma ordem de serviço encontrada
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Aniversariantes do Mês */}
+        {/* Aniversariantes da Semana */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              Aniversariantes - Dezembro
+              Aniversariantes - Próximos 7 dias
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {aniversariantes.map((pessoa, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+              {aniversariantes.map((pessoa) => (
+                <div key={pessoa.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="space-y-1">
-                    <div className="font-medium text-foreground">{pessoa.nome}</div>
-                    <div className="text-sm text-muted-foreground">{pessoa.telefone}</div>
+                    <div className="font-medium text-foreground">{pessoa.nome_cliente}</div>
+                    <div className="text-sm text-muted-foreground">{pessoa.telefone || "Telefone não informado"}</div>
                   </div>
                   <div className="text-right">
                     <Badge className="bg-accent text-accent-foreground">
-                      {pessoa.data}
+                      {pessoa.data_aniversario}
                     </Badge>
                   </div>
                 </div>
               ))}
+              {aniversariantes.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  Nenhum aniversário nos próximos 7 dias
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -141,15 +192,21 @@ const Dashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-green-600">R$ 15.420</div>
+              <div className="text-2xl font-bold text-green-600">
+                R$ {stats.contasRecebidas.toFixed(2).replace(".", ",")}
+              </div>
               <div className="text-sm text-muted-foreground">Contas Recebidas</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">R$ 8.950</div>
+              <div className="text-2xl font-bold text-orange-600">
+                R$ {stats.contasAReceber.toFixed(2).replace(".", ",")}
+              </div>
               <div className="text-sm text-muted-foreground">Contas a Receber</div>
             </div>
             <div className="text-center p-4 border rounded-lg">
-              <div className="text-2xl font-bold text-red-600">R$ 3.200</div>
+              <div className="text-2xl font-bold text-red-600">
+                R$ {stats.contasEmAtraso.toFixed(2).replace(".", ",")}
+              </div>
               <div className="text-sm text-muted-foreground">Contas em Atraso</div>
             </div>
           </div>

@@ -221,6 +221,44 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          data_aniversario: string | null
+          id: string
+          nome_cliente: string
+          telefone: string | null
+          updated_at: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          data_aniversario?: string | null
+          id?: string
+          nome_cliente: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          data_aniversario?: string | null
+          id?: string
+          nome_cliente?: string
+          telefone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orcamento_pecas: {
         Row: {
           created_at: string
