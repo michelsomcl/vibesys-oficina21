@@ -46,7 +46,7 @@ const menuItems = [
   { title: "Orçamentos", url: "/orcamentos", icon: FileText },
   { title: "Oficina", url: "/oficina", icon: Settings },
   { title: "Financeiro", url: "/financeiro", icon: DollarSign },
-  { title: "Relacionamento", url: "/relacionamento", icon: Heart },
+  { title: "Marketing", url: "/marketing", icon: Heart },
 ]
 
 export function AppSidebar() {
