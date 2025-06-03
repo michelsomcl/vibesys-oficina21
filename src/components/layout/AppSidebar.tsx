@@ -10,7 +10,7 @@ import {
   FileText, 
   Settings, 
   DollarSign, 
-  Heart,
+  Target,
   Calendar,
   PlusCircle,
   List
@@ -46,7 +46,7 @@ const menuItems = [
   { title: "Orçamentos", url: "/orcamentos", icon: FileText },
   { title: "Oficina", url: "/oficina", icon: Settings },
   { title: "Financeiro", url: "/financeiro", icon: DollarSign },
-  { title: "Marketing", url: "/marketing", icon: Heart },
+  { title: "Marketing", url: "/marketing", icon: Target },
 ]
 
 export function AppSidebar() {
